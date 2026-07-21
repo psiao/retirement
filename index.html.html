@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Retirement Path — Legal Soft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pine:#103F35; --pine-deep:#0A2E27; --mint:#E7F1EC; --mint-line:#CADED4;
+    --honey:#E29A2E; --honey-soft:#F6E4BE; --ink:#17211E; --slate:#5C6B64;
+    --paper:#FBFAF6; --white:#FFFFFF; --danger:#B4552F;
+    --shadow:0 18px 50px -20px rgba(16,63,53,.35);
+    --radius:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 80% -10%, #12513f22, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #e29a2e18, transparent 55%),
+      var(--paper);
+    min-height:100vh; line-height:1.5;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:28px 18px 60px;
+  }
+  .wrap{width:100%; max-width:580px}
+
+  /* header path */
+  .brand{display:flex; align-items:center; gap:9px; justify-content:center; margin-bottom:22px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--honey)}
+  .brand span{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--pine); font-weight:600}
+
+  .path{display:flex; align-items:center; gap:0; justify-content:center; margin:0 auto 26px; max-width:340px}
+  .path .node{width:13px;height:13px;border-radius:50%;background:var(--mint-line); flex:0 0 auto; transition:.4s}
+  .path .seg{height:2px;background:var(--mint-line); flex:1 1 auto; transition:.4s}
+  .path .node.done{background:var(--pine)}
+  .path .node.active{background:var(--honey); box-shadow:0 0 0 5px var(--honey-soft)}
+  .path .seg.done{background:var(--pine)}
+
+  .card{
+    background:var(--white); border:1px solid var(--mint-line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:34px 30px 30px; position:relative; overflow:hidden;
+  }
+  .step{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes rise{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+
+  .eyebrow{font-size:12.5px; font-weight:600; letter-spacing:.06em; color:var(--honey); text-transform:uppercase; margin-bottom:12px}
+  h1{font-family:'Fraunces',serif; font-weight:600; font-size:30px; line-height:1.15; color:var(--pine); letter-spacing:-.01em}
+  h2{font-family:'Fraunces',serif; font-weight:600; font-size:25px; line-height:1.2; color:var(--pine); letter-spacing:-.01em}
+  .lede{color:var(--slate); font-size:16px; margin-top:12px}
+  .q-hint{color:var(--slate); font-size:14px; margin-top:8px}
+
+  /* controls */
+  .controls{margin-top:24px; display:flex; flex-direction:column; gap:11px}
+  .btn{
+    font-family:'Inter',sans-serif; font-size:16px; font-weight:600; border:none; cursor:pointer;
+    border-radius:13px; padding:15px 18px; transition:transform .12s, box-shadow .2s, background .2s;
+    text-align:left; width:100%;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--pine); color:#fff; text-align:center; box-shadow:0 10px 22px -10px rgba(16,63,53,.6)}
+  .btn-primary:hover{background:var(--pine-deep)}
+  .btn-choice{
+    background:var(--mint); color:var(--pine); border:1.5px solid transparent;
+    display:flex; align-items:center; gap:12px;
+  }
+  .btn-choice:hover{border-color:var(--honey); background:#dfeee6}
+  .btn-choice .tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--pine); flex:0 0 auto; opacity:.5}
+  .btn-ghost{background:transparent; color:var(--slate); font-weight:500; text-align:center; padding:10px}
+  .btn-ghost:hover{color:var(--pine)}
+
+  .field{margin-top:22px}
+  .field label{display:block; font-weight:600; font-size:14px; margin-bottom:8px; color:var(--ink)}
+  input[type=date]{
+    font-family:'Inter',sans-serif; font-size:17px; width:100%; padding:14px 15px;
+    border:1.5px solid var(--mint-line); border-radius:13px; color:var(--ink); background:var(--white);
+  }
+  input[type=date]:focus{outline:none; border-color:var(--pine); box-shadow:0 0 0 4px #10513f22}
+
+  .reveal{background:var(--mint); border-radius:14px; padding:16px 17px; margin-top:20px; border-left:4px solid var(--honey)}
+  .reveal .big{font-family:'Fraunces',serif; font-size:20px; color:var(--pine); font-weight:600}
+  .reveal p{font-size:14.5px; color:var(--pine); margin-top:5px}
+
+  /* result timeline */
+  .result-head{text-align:center; margin-bottom:6px}
+  .group-badge{display:inline-block; background:var(--pine); color:#fff; font-weight:600; font-size:13px; padding:6px 14px; border-radius:999px; margin-top:14px}
+  .group-badge.g4{background:var(--slate)}
+
+  .timeline{margin:26px 0 6px; position:relative; padding-left:6px}
+  .stop{display:flex; gap:15px; position:relative; padding-bottom:20px}
+  .stop:last-child{padding-bottom:0}
+  .rail{position:relative; flex:0 0 auto; width:16px; display:flex; justify-content:center}
+  .rail::before{content:""; position:absolute; top:16px; bottom:-4px; width:2px; background:var(--mint-line)}
+  .stop:last-child .rail::before{display:none}
+  .marker{width:16px;height:16px;border-radius:50%; background:var(--white); border:3px solid var(--pine); z-index:1; margin-top:2px}
+  .marker.reward{border-color:var(--honey); background:var(--honey)}
+  .marker.now{border-color:var(--honey); background:var(--white); box-shadow:0 0 0 4px var(--honey-soft)}
+  .stop .date{font-weight:700; font-size:14px; color:var(--ink)}
+  .stop .what{font-size:14px; color:var(--pine); font-weight:600; margin-top:1px}
+  .stop .note{font-size:13px; color:var(--slate); margin-top:2px}
+
+  .realize{background:linear-gradient(135deg,#103F35,#0A2E27); color:#fff; border-radius:16px; padding:20px 20px; margin:22px 0}
+  .realize .k{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--honey-soft); font-weight:600}
+  .realize .v{font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin-top:6px; line-height:1.25}
+  .realize .s{font-size:14px; color:#cfe0d8; margin-top:8px}
+
+  .panel{border:1px solid var(--mint-line); border-radius:14px; padding:16px 17px; margin-top:14px}
+  .panel h3{font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--honey); font-weight:700; margin-bottom:10px}
+  .panel p{font-size:14.5px; color:var(--ink)}
+  .money{font-family:'Fraunces',serif; font-weight:600; color:var(--pine)}
+  .checklist{list-style:none; display:flex; flex-direction:column; gap:9px}
+  .checklist li{display:flex; gap:10px; font-size:14px; color:var(--ink)}
+  .checklist .c{color:var(--pine); font-weight:700; flex:0 0 auto}
+
+  .disclaimer{font-size:12px; color:var(--slate); margin-top:22px; text-align:center; line-height:1.55}
+  .warn{background:#fbeee6; border-left:4px solid var(--danger); border-radius:12px; padding:14px 16px; margin-top:16px; font-size:14px; color:#7a3418}
+
+  @media (max-width:420px){
+    .card{padding:26px 20px 24px} h1{font-size:26px} h2{font-size:22px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .step{animation:none} *{transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="dot"></span><span>Legal Soft &nbsp;·&nbsp; Your Retirement Benefit</span></div>
+  <div class="path" id="path" aria-hidden="true"></div>
+  <main class="card" id="card" role="main" aria-live="polite"></main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const app = document.getElementById('card');
+  const pathEl = document.getElementById('path');
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+
+  const state = { dep:null, active:null, continuous:null, within90:null, stepIndex:0 };
+  const TOTAL_NODES = 4; // intro + 3 questions leading to reveal
+
+  // ---------- date helpers ----------
+  const MO = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function fmt(d){ return MO[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear(); }
+  function addYears(d,n){ return new Date(d.getFullYear()+n, d.getMonth(), d.getDate()); }
+  function addMonths(d,n){ return new Date(d.getFullYear(), d.getMonth()+n, d.getDate()); }
+  function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function monthsBetween(a,b){ return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()) + (b.getDate()>=a.getDate()?0:-1); }
+  function quarterlyPayout(vest){
+    const m=vest.getMonth(), y=vest.getFullYear();
+    if(m<=2) return new Date(y,4,15);    // Q1 -> May 15
+    if(m<=5) return new Date(y,7,15);    // Q2 -> Aug 15
+    if(m<=8) return new Date(y,10,15);   // Q3 -> Nov 15
+    return new Date(y+1,1,15);           // Q4 -> Feb 15 next year
+  }
+
+  // ---------- group logic ----------
+  function classify(dep){
+    const b1=new Date(2025,5,1), b2=new Date(2025,8,1), b3=new Date(2026,4,1);
+    if(dep < b1) return "1";
+    if(dep < b2) return "2";
+    if(dep < b3) return "3";
+    return "none";
+  }
+  const GROUPS = {
+    "1":{name:"Group 1", vestYrs:3, vestLabel:"3 years",
+         reward:"your vested 3-year Retirement Fund balance, plus a <span class='money'>$750</span> milestone benefit every year after you move into the Milestone Program"},
+    "2":{name:"Group 2", vestYrs:1, vestLabel:"1 year",
+         reward:"<span class='money'>$500</span> at 6 months, <span class='money'>$250</span> at 12 months, and a <span class='money'>$360</span> vested benefit"},
+    "3":{name:"Group 3", vestYrs:1, vestLabel:"1 year",
+         reward:"<span class='money'>$500</span> at 6 months, <span class='money'>$250</span> at 12 months, and a <span class='money'>$180</span> vested benefit"}
+  };
+
+  // ---------- progress path ----------
+  function drawPath(active){
+    let html="";
+    for(let i=0;i<TOTAL_NODES;i++){
+      const cls = i<active ? "done" : (i===active ? "active":"");
+      html += `<div class="node ${cls}"></div>`;
+      if(i<TOTAL_NODES-1) html += `<div class="seg ${i<active?'done':''}"></div>`;
+    }
+    pathEl.innerHTML = html;
+  }
+
+  // ---------- render helpers ----------
+  function choiceBtn(label, onClick){
+    const b=document.createElement('button');
+    b.className="btn btn-choice"; b.innerHTML=`<span class="tick"></span><span>${label}</span>`;
+    b.onclick=onClick; return b;
+  }
+
+  // ---------- steps ----------
+  function render(node, html){ drawPath(node); app.innerHTML=`<div class="step">${html}</div>`; }
+
+  function intro(){
+    render(0,`
+      <div class="eyebrow">A 1-minute self-check</div>
+      <h1>Where are you on your retirement path?</h1>
+      <p class="lede">Answer three quick questions and see your own benefit — which group you're in, when you vest, and when your payout comes.</p>
+      <div class="controls">
+        <button class="btn btn-primary" id="go">Start</button>
+      </div>
+      <p class="disclaimer">This is an estimate to help you understand your benefit. Your final group, dates, and amounts are confirmed by Ops Support against your official records.</p>
+    `);
+    document.getElementById('go').onclick=stepDate;
+  }
+
+  function stepDate(){
+    render(1,`
+      <div class="eyebrow">Question 1 of 3</div>
+      <h2>When did you start as a Legal&nbsp;Soft VA?</h2>
+      <p class="q-hint">Your group depends only on your start (deployment) date — nothing else.</p>
+      <div class="field">
+        <label for="dep">Your start date</label>
+        <input type="date" id="dep" max="2030-12-31">
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="next" disabled style="opacity:.5">Continue</button>
+      </div>
+    `);
+    const inp=document.getElementById('dep'), nxt=document.getElementById('next');
+    if(state.dep){ inp.valueAsDate=state.dep; nxt.disabled=false; nxt.style.opacity=1; }
+    inp.oninput=()=>{ const ok=!!inp.value; nxt.disabled=!ok; nxt.style.opacity=ok?1:.5; };
+    nxt.onclick=()=>{
+      if(!inp.value) return;
+      const parts=inp.value.split('-'); state.dep=new Date(+parts[0],+parts[1]-1,+parts[2]);
+      revealGroup();
+    };
+  }
+
+  function revealGroup(){
+    const g=classify(state.dep);
+    if(g==="none"){
+      render(1,`
+        <div class="eyebrow">Question 1 of 3</div>
+        <h2>Thanks!</h2>
+        <div class="warn">Based on that start date (${fmt(state.dep)}), your benefit enrollment hasn't been set up in the program yet. Please check with <strong>Ops Support</strong> so they can confirm your details.</div>
+        <div class="controls"><button class="btn btn-ghost" id="back">← Change date</button></div>
+      `);
+      document.getElementById('back').onclick=stepDate; return;
+    }
+    const G=GROUPS[g];
+    render(1,`
+      <div class="eyebrow">Here's your first answer</div>
+      <h2>You're in ${G.name}.</h2>
+      <div class="reveal">
+        <div class="big">You started ${fmt(state.dep)}.</div>
+        <p>That means your benefit vests after <strong>${G.vestLabel}</strong>. Let's find out if you've reached it yet.</p>
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="next">Next question</button>
+        <button class="btn btn-ghost" id="back">← Change my date</button>
+      </div>
+    `);
+    document.getElementById('next').onclick=stepActive;
+    document.getElementById('back').onclick=stepDate;
+  }
+
+  function stepActive(){
+    render(2,`
+      <div class="eyebrow">Question 2 of 3</div>
+      <h2>Are you active and working full-time right now?</h2>
+      <p class="q-hint">Your payout is released only while you're active and full-time — so this is part of being eligible.</p>
+      <div class="controls" id="opts"></div>
+    `);
+    const opts=document.getElementById('opts');
+    opts.appendChild(choiceBtn("Yes, I'm active full-time", ()=>{state.active=true; stepContinuous();}));
+    opts.appendChild(choiceBtn("Not right now", ()=>{state.active=false; stepContinuous();}));
+  }
+
+  function stepContinuous(){
+    render(3,`
+      <div class="eyebrow">Question 3 of 3</div>
+      <h2>Since you started, have you stayed without a break?</h2>
+      <p class="q-hint">If you ever left and came back, it can affect how your time counts toward vesting.</p>
+      <div class="controls" id="opts"></div>
+    `);
+    const opts=document.getElementById('opts');
+    opts.appendChild(choiceBtn("Yes, continuously", ()=>{state.continuous=true; state.within90=null; showResult();}));
+    opts.appendChild(choiceBtn("I left and came back", ()=>{state.continuous=false; step90();}));
+  }
+
+  function step90(){
+    render(3,`
+      <div class="eyebrow">One more thing</div>
+      <h2>Did you come back within about 3 months?</h2>
+      <p class="q-hint">Returning within 90 days usually protects the tenure you already earned.</p>
+      <div class="controls" id="opts"></div>
+    `);
+    const opts=document.getElementById('opts');
+    opts.appendChild(choiceBtn("Yes, within ~3 months", ()=>{state.within90=true; showResult();}));
+    opts.appendChild(choiceBtn("No, it was longer", ()=>{state.within90=false; showResult();}));
+  }
+
+  // ---------- result ----------
+  function showResult(){
+    const g=classify(state.dep); const G=GROUPS[g];
+    const vest = addYears(state.dep, G.vestYrs);
+    const transition = addDays(vest,1);
+    const payout = quarterlyPayout(vest);
+    const vested = TODAY >= vest;
+    const monthsToVest = monthsBetween(TODAY, vest);
+
+    // build timeline stops
+    let stops = [];
+    stops.push({date:fmt(state.dep), what:"You started", note:"Your retirement benefit clock begins here.", cls:""});
+    if(g!=="1"){
+      const six=addMonths(state.dep,6);
+      stops.push({date:fmt(six), what:"6-month milestone", note:"$500 milestone" , cls:"reward"});
+    }
+    stops.push({date:fmt(vest), what:"You vest ("+G.vestLabel+")", note: g==="1" ? "Your Retirement Fund fully vests." : "1-year vesting complete — $250 milestone.", cls:"reward"});
+    stops.push({date:fmt(transition), what:"Move into the Milestone Program", note:"The day after you vest.", cls:""});
+    stops.push({date:fmt(payout), what:"Retirement Fund payout", note:"Released on the quarterly schedule after your vesting date.", cls:"reward"});
+    if(g==="1"){
+      stops.push({date:"Each year after", what:"$750 milestone benefit", note:"Paid every year you complete in the Milestone Program.", cls:"reward"});
+    }
+
+    let timelineHtml = stops.map(s=>`
+      <div class="stop">
+        <div class="rail"><div class="marker ${s.cls}"></div></div>
+        <div><div class="date">${s.date}</div><div class="what">${s.what}</div><div class="note">${s.note}</div></div>
+      </div>`).join('');
+
+    // the self-realization block
+    let realizeK, realizeV, realizeS;
+    if(vested){
+      realizeK="Your vesting mark"; 
+      realizeV="You've already reached it — you vested on "+fmt(vest)+".";
+      realizeS="Your payout is scheduled for "+fmt(payout)+". If you're active and full-time, you're in the payout window.";
+    } else {
+      realizeK="Your vesting mark";
+      realizeV="You vest on "+fmt(vest)+" — about "+Math.max(0,monthsToVest)+" month"+(monthsToVest===1?"":"s")+" from now.";
+      realizeS="Keep going — once you reach it, your payout follows on "+fmt(payout)+".";
+    }
+
+    // tenure / active notes
+    let notes="";
+    if(state.active===false){
+      notes += `<div class="warn">You told us you're not active full-time right now. Payouts are released only while you're active and full-time, so this would need to be true at payout time. Check with Ops Support about your status.</div>`;
+    }
+    if(state.continuous===false){
+      if(state.within90===true){
+        notes += `<div class="panel"><h3>Your break</h3><p>You returned within about 3 months, so the time you earned before usually still counts. Ops Support confirms this against your records.</p></div>`;
+      } else if(state.within90===false){
+        notes += `<div class="panel"><h3>Your break</h3><p>Because your return was longer than about 3 months, your earlier time may not carry over, and your vesting could start from your return date. Ops Support will confirm how your tenure counts.</p></div>`;
+      }
+    }
+
+    render(4,`
+      <div class="result-head">
+        <div class="eyebrow">Your retirement path</div>
+        <h2>Here's where you stand.</h2>
+        <div class="group-badge">${G.name} · vests after ${G.vestLabel}</div>
+      </div>
+
+      <div class="realize">
+        <div class="k">${realizeK}</div>
+        <div class="v">${realizeV}</div>
+        <div class="s">${realizeS}</div>
+      </div>
+
+      <div class="timeline">${timelineHtml}</div>
+
+      <div class="panel">
+        <h3>What you receive</h3>
+        <p>${G.reward}.</p>
+      </div>
+
+      <div class="panel">
+        <h3>Why it's not instant</h3>
+        <p>Reaching your vesting date isn't the payout day. Your fund is processed, you move into the Milestone Program the next day, and the payout is released on the quarterly schedule (the 15th, roughly 30–45 days later) — after your records are validated and approved. It's a set process, not a delay.</p>
+      </div>
+
+      <div class="panel">
+        <h3>To receive your payout you need</h3>
+        <ul class="checklist">
+          <li><span class="c">✓</span> To be active and full-time when it's paid</li>
+          <li><span class="c">✓</span> Your eligibility and records validated</li>
+          <li><span class="c">✓</span> Payroll processing</li>
+          <li><span class="c">✓</span> Leadership review and approval</li>
+        </ul>
+      </div>
+
+      ${notes}
+
+      <p class="disclaimer">This is an estimate to help you understand your benefit. Your official group, dates, and amounts are confirmed by Ops Support against validated records. Questions? Reach Ops Support through the Ops Support Portal Form.</p>
+      <div class="controls"><button class="btn btn-ghost" id="restart">↺ Start over</button></div>
+    `);
+    document.getElementById('restart').onclick=()=>{ state.dep=null; state.active=null; state.continuous=null; state.within90=null; intro(); };
+  }
+
+  intro();
+})();
+</script>
+</body>
+</html>
