@@ -59,7 +59,7 @@
   .btn{
     font-family:'Inter',sans-serif; font-size:16px; font-weight:600; border:none; cursor:pointer;
     border-radius:13px; padding:15px 18px; transition:transform .12s, box-shadow .2s, background .2s;
-    text-align:left; width:100%;
+    text-align:left; width:100%; display:block; text-decoration:none;
   }
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--pine); color:#fff; text-align:center; box-shadow:0 10px 22px -10px rgba(16,63,53,.6)}
@@ -125,6 +125,9 @@
   @media (prefers-reduced-motion: reduce){
     .step{animation:none} *{transition:none!important}
   }
+  .foot{text-align:center; margin-top:20px}
+  .foot a{color:var(--pine); font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:1px solid var(--honey); padding-bottom:2px}
+  .foot a:hover{color:var(--pine-deep)}
 </style>
 </head>
 <body>
@@ -132,6 +135,7 @@
   <div class="brand"><span class="dot"></span><span>Legal Soft &nbsp;·&nbsp; Your Retirement Benefit</span></div>
   <div class="path" id="path" aria-hidden="true"></div>
   <main class="card" id="card" role="main" aria-live="polite"></main>
+  <footer class="foot"><a href="https://share.hsforms.com/141z0JGxQQZ2HOmcxsMSqeQ3es9o" target="_blank" rel="noopener">Questions about your benefit? Create a support ticket &rarr;</a></footer>
 </div>
 
 <script>
@@ -143,6 +147,7 @@
 
   const state = { dep:null, active:null, continuous:null, within90:null, stepIndex:0 };
   const TOTAL_NODES = 4; // intro + 3 questions leading to reveal
+  const TICKET_URL = "https://share.hsforms.com/141z0JGxQQZ2HOmcxsMSqeQ3es9o";
 
   // ---------- date helpers ----------
   const MO = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -167,13 +172,17 @@
     if(dep < b3) return "3";
     return "none";
   }
+  const MILESTONE = "Then, separately, the Milestone Program begins: a flat <span class='money'>$750</span> benefit for each year you complete in it. These are two different payouts at different times — the Retirement Fund comes first, and the Milestone benefit follows in the years after";
   const GROUPS = {
     "1":{name:"Group 1", vestYrs:3, vestLabel:"3 years",
-         reward:"your vested 3-year Retirement Fund balance, plus a <span class='money'>$750</span> milestone benefit every year after you move into the Milestone Program"},
+         vested:"your vested 3-year Retirement Fund balance",
+         reward:"first, your vested 3-year Retirement Fund balance — paid once when you vest. "+MILESTONE},
     "2":{name:"Group 2", vestYrs:1, vestLabel:"1 year",
-         reward:"<span class='money'>$500</span> at 6 months, <span class='money'>$250</span> at 12 months, and a <span class='money'>$360</span> vested benefit"},
+         vested:"a <span class='money'>$360</span> vested Retirement Fund benefit",
+         reward:"first, a <span class='money'>$360</span> vested Retirement Fund benefit — paid once when you vest. "+MILESTONE},
     "3":{name:"Group 3", vestYrs:1, vestLabel:"1 year",
-         reward:"<span class='money'>$500</span> at 6 months, <span class='money'>$250</span> at 12 months, and a <span class='money'>$180</span> vested benefit"}
+         vested:"a <span class='money'>$180</span> vested Retirement Fund benefit",
+         reward:"first, a <span class='money'>$180</span> vested Retirement Fund benefit — paid once when you vest. "+MILESTONE}
   };
 
   // ---------- progress path ----------
@@ -205,7 +214,7 @@
       <div class="controls">
         <button class="btn btn-primary" id="go">Start</button>
       </div>
-      <p class="disclaimer">This is an estimate to help you understand your benefit. Your final group, dates, and amounts are confirmed by Ops Support against your official records.</p>
+      <p class="disclaimer">This is a tentative estimate to help you understand your benefit. All amounts and dates are confirmed by Ops Support against your official records.</p>
     `);
     document.getElementById('go').onclick=stepDate;
   }
@@ -239,8 +248,11 @@
       render(1,`
         <div class="eyebrow">Question 1 of 3</div>
         <h2>Thanks!</h2>
-        <div class="warn">Based on that start date (${fmt(state.dep)}), your benefit enrollment hasn't been set up in the program yet. Please check with <strong>Ops Support</strong> so they can confirm your details.</div>
-        <div class="controls"><button class="btn btn-ghost" id="back">← Change date</button></div>
+        <div class="warn">Based on that start date (${fmt(state.dep)}), your benefit enrollment hasn't been set up in the program yet. Please create a ticket so Ops Support can confirm your details.</div>
+        <div class="controls">
+          <a class="btn btn-primary" href="${TICKET_URL}" target="_blank" rel="noopener">Create a support ticket</a>
+          <button class="btn btn-ghost" id="back">← Change date</button>
+        </div>
       `);
       document.getElementById('back').onclick=stepDate; return;
     }
@@ -300,7 +312,12 @@
   // ---------- result ----------
   function showResult(){
     const g=classify(state.dep); const G=GROUPS[g];
-    const vest = addYears(state.dep, G.vestYrs);
+    // Group 1's benefit period is pinned to June 1, 2023 — anyone who started
+    // earlier still vests from that date, per the official withdrawal schedule.
+    const PROGRAM_START = new Date(2023,5,1);
+    let benefitStart = state.dep, floored = false;
+    if(g==="1" && benefitStart < PROGRAM_START){ benefitStart = PROGRAM_START; floored = true; }
+    const vest = addYears(benefitStart, G.vestYrs);
     const transition = addDays(vest,1);
     const payout = quarterlyPayout(vest);
     const vested = TODAY >= vest;
@@ -309,16 +326,10 @@
     // build timeline stops
     let stops = [];
     stops.push({date:fmt(state.dep), what:"You started", note:"Your retirement benefit clock begins here.", cls:""});
-    if(g!=="1"){
-      const six=addMonths(state.dep,6);
-      stops.push({date:fmt(six), what:"6-month milestone", note:"$500 milestone" , cls:"reward"});
-    }
-    stops.push({date:fmt(vest), what:"You vest ("+G.vestLabel+")", note: g==="1" ? "Your Retirement Fund fully vests." : "1-year vesting complete — $250 milestone.", cls:"reward"});
+    stops.push({date:fmt(vest), what:"You vest ("+G.vestLabel+")", note: floored ? "Your Retirement Fund vests. (For VAs who started before June 2023, the benefit period begins June 1, 2023.)" : "Your Retirement Fund fully vests.", cls:"reward"});
     stops.push({date:fmt(transition), what:"Move into the Milestone Program", note:"The day after you vest.", cls:""});
-    stops.push({date:fmt(payout), what:"Retirement Fund payout", note:"Released on the quarterly schedule after your vesting date.", cls:"reward"});
-    if(g==="1"){
-      stops.push({date:"Each year after", what:"$750 milestone benefit", note:"Paid every year you complete in the Milestone Program.", cls:"reward"});
-    }
+    stops.push({date:fmt(payout), what:"Retirement Fund payout", note:"Your vested fund is released on the quarterly schedule after your vesting date.", cls:"reward"});
+    stops.push({date:"Each year after", what:"$750 Milestone benefit", note:"A separate, flat payout that follows — this is the Milestone Program, which starts once your Retirement Fund has been paid. No staggered amounts.", cls:"reward"});
 
     let timelineHtml = stops.map(s=>`
       <div class="stop">
@@ -388,7 +399,13 @@
 
       ${notes}
 
-      <p class="disclaimer">This is an estimate to help you understand your benefit. Your official group, dates, and amounts are confirmed by Ops Support against validated records. Questions? Reach Ops Support through the Ops Support Portal Form.</p>
+      <div class="panel" style="border-color:var(--honey-soft);background:#fffaf0">
+        <h3>Still have questions?</h3>
+        <p style="margin-bottom:13px">Create a ticket and Ops Support will follow up with your official details.</p>
+        <a class="btn btn-primary" href="${TICKET_URL}" target="_blank" rel="noopener">Create a support ticket</a>
+      </div>
+
+      <p class="disclaimer">All amounts and dates shown here are tentative estimates, not a guarantee of payment. Your official group, vesting dates, and amounts are confirmed by Ops Support against validated records.</p>
       <div class="controls"><button class="btn btn-ghost" id="restart">↺ Start over</button></div>
     `);
     document.getElementById('restart').onclick=()=>{ state.dep=null; state.active=null; state.continuous=null; state.within90=null; intro(); };
