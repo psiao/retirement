@@ -125,6 +125,8 @@
   @media (prefers-reduced-motion: reduce){
     .step{animation:none} *{transition:none!important}
   }
+  .cat-hint{font-size:12.5px; color:var(--slate); margin-top:10px; text-align:center}
+  .cat-hint strong{color:var(--pine)}
   .foot{text-align:center; margin-top:20px}
   .foot a{color:var(--pine); font-size:13.5px; font-weight:600; text-decoration:none; border-bottom:1px solid var(--honey); padding-bottom:2px}
   .foot a:hover{color:var(--pine-deep)}
@@ -145,7 +147,7 @@
   const pathEl = document.getElementById('path');
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 
-  const state = { dep:null, active:null, continuous:null, within90:null, stepIndex:0 };
+  const state = { dep:null, active:null, continuous:null, within90:null, gap:null, stepIndex:0 };
   const TOTAL_NODES = 4; // intro + 3 questions leading to reveal
   const TICKET_URL = "https://share.hsforms.com/141z0JGxQQZ2HOmcxsMSqeQ3es9o";
 
@@ -223,9 +225,9 @@
     render(1,`
       <div class="eyebrow">Question 1 of 3</div>
       <h2>When did you start as a Legal&nbsp;Soft VA?</h2>
-      <p class="q-hint">Your group depends only on your start (deployment) date — nothing else.</p>
+      <p class="q-hint">We mean your <strong>Deployment Date</strong> — your first day actually working with the client. Not your hire date, interview date, or contract date.</p>
       <div class="field">
-        <label for="dep">Your start date</label>
+        <label for="dep">Deployment date (first day with the client)</label>
         <input type="date" id="dep" max="2030-12-31">
       </div>
       <div class="controls">
@@ -249,6 +251,7 @@
         <div class="eyebrow">Question 1 of 3</div>
         <h2>Thanks!</h2>
         <div class="warn">Based on that start date (${fmt(state.dep)}), your benefit enrollment hasn't been set up in the program yet. Please create a ticket so Ops Support can confirm your details.</div>
+        <p class="cat-hint" style="text-align:left;margin:-4px 0 4px">On the form, choose <strong>&ldquo;Legal Soft Milestone Program&rdquo;</strong> as the issue category.</p>
         <div class="controls">
           <a class="btn btn-primary" href="${TICKET_URL}" target="_blank" rel="noopener">Create a support ticket</a>
           <button class="btn btn-ghost" id="back">← Change date</button>
@@ -282,31 +285,32 @@
     `);
     const opts=document.getElementById('opts');
     opts.appendChild(choiceBtn("Yes, I'm active full-time", ()=>{state.active=true; stepContinuous();}));
-    opts.appendChild(choiceBtn("Not right now", ()=>{state.active=false; stepContinuous();}));
+    opts.appendChild(choiceBtn("Not right now", ()=>{state.active=false; showInactive();}));
   }
 
   function stepContinuous(){
     render(3,`
       <div class="eyebrow">Question 3 of 3</div>
-      <h2>Since you started, have you stayed without a break?</h2>
-      <p class="q-hint">If you ever left and came back, it can affect how your time counts toward vesting.</p>
+      <h2>Have you ever separated and then returned?</h2>
+      <p class="q-hint">A separation is a break in service. Being realigned means returning to a contract after that break.</p>
       <div class="controls" id="opts"></div>
     `);
     const opts=document.getElementById('opts');
-    opts.appendChild(choiceBtn("Yes, continuously", ()=>{state.continuous=true; state.within90=null; showResult();}));
-    opts.appendChild(choiceBtn("I left and came back", ()=>{state.continuous=false; step90();}));
+    opts.appendChild(choiceBtn("No, I've stayed continuously", ()=>{state.continuous=true; state.gap=null; showResult();}));
+    opts.appendChild(choiceBtn("Yes, I separated and came back", ()=>{state.continuous=false; stepGap();}));
   }
 
-  function step90(){
+  function stepGap(){
     render(3,`
       <div class="eyebrow">One more thing</div>
-      <h2>Did you come back within about 3 months?</h2>
-      <p class="q-hint">Returning within 90 days usually protects the tenure you already earned.</p>
+      <h2>How long was it between your separation date and your return?</h2>
+      <p class="q-hint">The length of the gap decides what happens to the benefits you'd already earned.</p>
       <div class="controls" id="opts"></div>
     `);
     const opts=document.getElementById('opts');
-    opts.appendChild(choiceBtn("Yes, within ~3 months", ()=>{state.within90=true; showResult();}));
-    opts.appendChild(choiceBtn("No, it was longer", ()=>{state.within90=false; showResult();}));
+    opts.appendChild(choiceBtn("Within 30 days", ()=>{state.gap="le30"; showResult();}));
+    opts.appendChild(choiceBtn("31 to 90 days", ()=>{state.gap="mid"; showResult();}));
+    opts.appendChild(choiceBtn("More than 90 days", ()=>{state.gap="gt90"; showLongGap();}));
   }
 
   // ---------- result ----------
@@ -349,17 +353,12 @@
       realizeS="Keep going — once you reach it, your payout follows on "+fmt(payout)+".";
     }
 
-    // tenure / active notes
+    // tenure note based on the length of any break in service
     let notes="";
-    if(state.active===false){
-      notes += `<div class="warn">You told us you're not active full-time right now. Payouts are released only while you're active and full-time, so this would need to be true at payout time. Check with Ops Support about your status.</div>`;
-    }
-    if(state.continuous===false){
-      if(state.within90===true){
-        notes += `<div class="panel"><h3>Your break</h3><p>You returned within about 3 months, so the time you earned before usually still counts. Ops Support confirms this against your records.</p></div>`;
-      } else if(state.within90===false){
-        notes += `<div class="panel"><h3>Your break</h3><p>Because your return was longer than about 3 months, your earlier time may not carry over, and your vesting could start from your return date. Ops Support will confirm how your tenure counts.</p></div>`;
-      }
+    if(state.continuous===false && state.gap==="le30"){
+      notes += `<div class="panel"><h3>Your break in service</h3><p>You were realigned within 30 days of your separation, so you keep every benefit you had already accrued and continue to accrue at your original monthly rate. Your path below is unchanged.</p></div>`;
+    } else if(state.continuous===false && state.gap==="mid"){
+      notes += `<div class="panel" style="border-color:var(--honey-soft);background:#fffaf0"><h3>Your break in service</h3><p>You were realigned after the 30-day grace period but within 90 days, so you keep every benefit you had already accrued and your vesting still stands. From your return onward, new benefits accrue at your new contract's monthly rate, which is lower — so your final amount may differ from the standard figure above. Ops Support can confirm your exact amount.</p></div>`;
     }
 
     render(4,`
@@ -403,12 +402,60 @@
         <h3>Still have questions?</h3>
         <p style="margin-bottom:13px">Create a ticket and Ops Support will follow up with your official details.</p>
         <a class="btn btn-primary" href="${TICKET_URL}" target="_blank" rel="noopener">Create a support ticket</a>
+        <p class="cat-hint">On the form, choose <strong>&ldquo;Legal Soft Milestone Program&rdquo;</strong> as the issue category.</p>
       </div>
 
       <p class="disclaimer">All amounts and dates shown here are tentative estimates, not a guarantee of payment. Your official group, vesting dates, and amounts are confirmed by Ops Support against validated records.</p>
       <div class="controls"><button class="btn btn-ghost" id="restart">↺ Start over</button></div>
     `);
-    document.getElementById('restart').onclick=()=>{ state.dep=null; state.active=null; state.continuous=null; state.within90=null; intro(); };
+    document.getElementById('restart').onclick=resetAll;
+  }
+
+  function resetAll(){ state.dep=null; state.active=null; state.continuous=null; state.within90=null; state.gap=null; intro(); }
+
+  function ticketPanel(head, body){
+    return `<div class="panel" style="border-color:var(--honey-soft);background:#fffaf0">
+      <h3>${head}</h3>
+      <p style="margin-bottom:13px">${body}</p>
+      <a class="btn btn-primary" href="${TICKET_URL}" target="_blank" rel="noopener">Create a support ticket</a>
+      <p class="cat-hint">On the form, choose <strong>&ldquo;Legal Soft Milestone Program&rdquo;</strong> as the issue category.</p>
+    </div>`;
+  }
+
+  function showInactive(){
+    render(4,`
+      <div class="result-head">
+        <div class="eyebrow">Your status</div>
+        <h2>You're not eligible for a payout just yet.</h2>
+      </div>
+      <div class="realize">
+        <div class="k">Why</div>
+        <div class="v">Retirement payouts are released only while you're active and working full-time.</div>
+        <div class="s">Since you're not active full-time right now, there isn't a payout to process at this moment. If your status changes, your eligibility can pick back up. Ops Support can explain exactly where you stand.</div>
+      </div>
+      ${ticketPanel("Get your details","Reach out to Ops Support to understand your situation.")}
+      <p class="disclaimer">Eligibility, amounts, and dates are confirmed by Ops Support against validated records.</p>
+      <div class="controls"><button class="btn btn-ghost" id="restart">↺ Start over</button></div>
+    `);
+    document.getElementById('restart').onclick=resetAll;
+  }
+
+  function showLongGap(){
+    render(4,`
+      <div class="result-head">
+        <div class="eyebrow">Your status</div>
+        <h2>Let's have the helpdesk check your record.</h2>
+      </div>
+      <div class="realize">
+        <div class="k">Why</div>
+        <div class="v">Because your break was longer than 90 days, you're treated as a new hire.</div>
+        <div class="s">Any retirement benefits you had accrued before are forfeited, and your accrual restarts from your new hire date under your new contract's terms — which usually means the newer version of the program (Group 2 or Group 3). The helpdesk can confirm your current group, vesting date, and payout date.</div>
+      </div>
+      ${ticketPanel("Confirm your status","The helpdesk can tell you your current group, vesting date, and payout date.")}
+      <p class="disclaimer">Your official group, dates, and amounts are confirmed by Ops Support against validated records.</p>
+      <div class="controls"><button class="btn btn-ghost" id="restart">↺ Start over</button></div>
+    `);
+    document.getElementById('restart').onclick=resetAll;
   }
 
   intro();
