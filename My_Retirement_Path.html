@@ -125,6 +125,10 @@
   @media (prefers-reduced-motion: reduce){
     .step{animation:none} *{transition:none!important}
   }
+  .appreciate{background:linear-gradient(135deg,#FBEFD3,#F6E4BE); border:1px solid var(--honey-soft); border-radius:16px; padding:20px 22px; margin-bottom:18px; text-align:center}
+  .ap-eyebrow{font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:#9A6B0A; font-weight:700}
+  .ap-title{font-family:'Fraunces',serif; font-size:21px; font-weight:600; margin-top:7px; line-height:1.25; color:var(--pine)}
+  .ap-body{font-size:13.5px; color:#6b5423; margin-top:8px; line-height:1.55}
   .cat-hint{font-size:12.5px; color:var(--slate); margin-top:10px; text-align:center}
   .cat-hint strong{color:var(--pine)}
   .foot{text-align:center; margin-top:20px}
@@ -174,17 +178,17 @@
     if(dep < b3) return "3";
     return "none";
   }
-  const MILESTONE = "Then, separately, the Milestone Program begins: a flat <span class='money'>$750</span> benefit for each year you complete in it. These are two different payouts at different times — the Retirement Fund comes first, and the Milestone benefit follows in the years after";
+  const MILESTONE = "After that, the Milestone Program takes over — our way of thanking you for staying: a flat <span class='money'>$750</span> for every year you continue with Legal Soft. So it's two separate rewards at two different times — your Retirement Fund lands first as a lump sum, and the Milestone reward comes each year after";
   const GROUPS = {
     "1":{name:"Group 1", vestYrs:3, vestLabel:"3 years",
          vested:"your vested 3-year Retirement Fund balance",
-         reward:"first, your vested 3-year Retirement Fund balance — paid once when you vest. "+MILESTONE},
+         reward:"Two rewards, arriving at different times. First, your <strong>Retirement Fund</strong> — everything you've built up over your three years, paid to you as a single lump sum once you vest. "+MILESTONE+"."},
     "2":{name:"Group 2", vestYrs:1, vestLabel:"1 year",
          vested:"a <span class='money'>$360</span> vested Retirement Fund benefit",
-         reward:"first, a <span class='money'>$360</span> vested Retirement Fund benefit — paid once when you vest. "+MILESTONE},
+         reward:"Two rewards, arriving at different times. First, your <strong>Retirement Fund</strong> — a <span class='money'>$360</span> vested benefit, paid to you as a single lump sum once you vest. "+MILESTONE+"."},
     "3":{name:"Group 3", vestYrs:1, vestLabel:"1 year",
          vested:"a <span class='money'>$180</span> vested Retirement Fund benefit",
-         reward:"first, a <span class='money'>$180</span> vested Retirement Fund benefit — paid once when you vest. "+MILESTONE}
+         reward:"Two rewards, arriving at different times. First, your <strong>Retirement Fund</strong> — a <span class='money'>$180</span> vested benefit, paid to you as a single lump sum once you vest. "+MILESTONE+"."}
   };
 
   // ---------- progress path ----------
@@ -212,7 +216,7 @@
     render(0,`
       <div class="eyebrow">A 1-minute self-check</div>
       <h1>Where are you on your retirement path?</h1>
-      <p class="lede">Answer three quick questions and see your own benefit — which group you're in, when you vest, and when your payout comes.</p>
+      <p class="lede">Your time with Legal Soft is building something real. Answer three quick questions to see the retirement benefit your loyalty has earned — your group, when you vest, and when your payout arrives.</p>
       <div class="controls">
         <button class="btn btn-primary" id="go">Start</button>
       </div>
@@ -341,16 +345,20 @@
         <div><div class="date">${s.date}</div><div class="what">${s.what}</div><div class="note">${s.note}</div></div>
       </div>`).join('');
 
-    // the self-realization block
-    let realizeK, realizeV, realizeS;
+    // appreciation + self-realization
+    let apprTitle, apprBody, realizeK, realizeV, realizeS;
     if(vested){
-      realizeK="Your vesting mark"; 
-      realizeV="You've already reached it — you vested on "+fmt(vest)+".";
-      realizeS="Your payout is scheduled for "+fmt(payout)+". If you're active and full-time, you're in the payout window.";
+      apprTitle="Thank you for your "+(G.vestYrs===1?"first year":G.vestLabel)+" with Legal Soft.";
+      apprBody="Choosing to grow your career with us this long is a real commitment. Reaching this milestone is something to be proud of — and this benefit exists to honor your loyalty.";
+      realizeK="You've reached it";
+      realizeV="Congratulations — you've reached your "+G.vestYrs+"-year milestone on "+fmt(vest)+".";
+      realizeS="That's a genuine achievement. Your payout is scheduled for "+fmt(payout)+" — as long as you're active and full-time, you're in the payout window.";
     } else {
-      realizeK="Your vesting mark";
-      realizeV="You vest on "+fmt(vest)+" — about "+Math.max(0,monthsToVest)+" month"+(monthsToVest===1?"":"s")+" from now.";
-      realizeS="Keep going — once you reach it, your payout follows on "+fmt(payout)+".";
+      apprTitle="Thank you for growing with Legal Soft.";
+      apprBody="You're on your way to an important milestone, and every month of your commitment already matters to us. Here's what your loyalty is building toward.";
+      realizeK="Where you are now";
+      realizeV="You vest on "+fmt(vest)+" — about "+Math.max(0,monthsToVest)+" month"+(monthsToVest===1?"":"s")+" away.";
+      realizeS="Every month you stay brings you closer, and it already counts. Once you reach it, your payout follows on "+fmt(payout)+".";
     }
 
     // tenure note based on the length of any break in service
@@ -362,6 +370,11 @@
     }
 
     render(4,`
+      <div class="appreciate">
+        <div class="ap-eyebrow">A milestone in your career</div>
+        <div class="ap-title">${apprTitle}</div>
+        <div class="ap-body">${apprBody}</div>
+      </div>
       <div class="result-head">
         <div class="eyebrow">Your retirement path</div>
         <h2>Here's where you stand.</h2>
@@ -378,12 +391,12 @@
 
       <div class="panel">
         <h3>What you receive</h3>
-        <p>${G.reward}.</p>
+        <p>${G.reward}</p>
       </div>
 
       <div class="panel">
-        <h3>Why it's not instant</h3>
-        <p>Reaching your vesting date isn't the payout day. Your fund is processed, you move into the Milestone Program the next day, and the payout is released on the quarterly schedule (the 15th, roughly 30–45 days later) — after your records are validated and approved. It's a set process, not a delay.</p>
+        <h3>Why the payout isn't the same day</h3>
+        <p>Hitting your vesting date means you've <em>earned</em> the benefit — but the money won't land that exact day, and that's completely normal. Behind the scenes your fund is finalized, your records are checked, and payroll releases it on the company's regular payout schedule: the 15th, usually within 30–45 days of your vesting date. Nothing is stuck, and there's nothing you need to chase — it's simply the standard process every payout goes through.</p>
       </div>
 
       <div class="panel">
